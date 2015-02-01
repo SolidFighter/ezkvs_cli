@@ -1,5 +1,5 @@
 -module(ezkvs_cli).
--export([connect/0, disconnect/1, put/3, delete/2, get/2]).
+-export([connect/0, disconnect/1, put/3, delete/2, get/2, test/0]).
 
 connect() ->
   {ok, Socket} = gen_tcp:connect("localhost", 2345, [binary, {packet, 4}]),
@@ -26,3 +26,11 @@ get_reply(Socket) ->
       Val = binary_to_term(Bin),
       io:format("Client result = ~p.~n",[Val])
   end.
+
+test() ->
+  Socket =  connect(),
+  put(name, "yangmeng", Socket),
+  get(name, Socket),
+  delete(name, Socket),
+  get(name, Socket).
+  
