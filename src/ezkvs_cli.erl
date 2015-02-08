@@ -25,6 +25,8 @@ get_reply(Socket) ->
     {tcp, Socket, Bin} ->
       Val = binary_to_term(Bin),
       io:format("Client result = ~p.~n",[Val])
+    after 1000 ->
+      io:format("timeout.~n")
   end.
 
 test() ->
@@ -32,5 +34,6 @@ test() ->
   put(name, "yangmeng", Socket),
   get(name, Socket),
   delete(name, Socket),
-  get(name, Socket).
+  get(name, Socket),
+  disconnect(Socket).
   
