@@ -4,18 +4,19 @@
 
 %% MAX_HASH_VALUE = pow(2, 64).
 -define(MAX_HASH_VALUE, 2#1111111111111111111111111111111111111111111111111111111111111111).
--define(MAX_BUCKETS, 4).
+-define(MAX_BUCKETS, 1).
 
 connect() ->
   Servers = get_data_servers(),
   generate_route(Servers, []).
 
 get_data_servers() ->
-  [{0, ["127.0.0.1"]}, {1, ["192.168.1.105"]}].
+  %%[{0, ["127.0.0.1"]}, {1, ["192.168.1.105"]}].
+  [{0, ["127.0.0.1"]}].
 
 connect(IPAddr, Port) ->
-  {ok, Socket} = gen_tcp:connect(IPAddr, Port, [binary, {packet, 4}]),
-  Socket.
+  io:format("IPAddr = ~p, Port = ~p.~n", [IPAddr, Port]),
+  gen_tcp:connect(IPAddr, Port, [binary, {packet, 4}]).
 
 disconnect([{_BucketNum, {_IPAddr, Socket}} | T]) ->
   gen_tcp:close(Socket),
@@ -47,9 +48,10 @@ get_reply(Socket) ->
       io:format("timeout.~n")
   end.
 
-generate_route([{BucketNum, IPAddr} | T], RouteTable) ->
+generate_route([{BucketNum, [IPAddr | _T]} | T], RouteTable) ->
+  io:format("IPAddr = ~p.~n", [IPAddr]),
   {ok, Socket} = connect(IPAddr, 2345),
-  generate_route(T, [RouteTable | {BucketNum, {IPAddr, Socket}}]);
+  generate_route(T, [{BucketNum, {IPAddr, Socket}} | RouteTable]);
 generate_route([], RouteTable) ->
   RouteTable.
 
@@ -71,7 +73,8 @@ get_socket(RouteTable, Key) ->
   Socket.
 
 test() ->
-  RouteTable =  connect(),
+  RouteTable = connect(),
+  io:format("RouteTable = ~p.~n", [RouteTable]),
   put(name, "yangmeng", RouteTable),
   get(name, RouteTable),
   delete(name, RouteTable),
