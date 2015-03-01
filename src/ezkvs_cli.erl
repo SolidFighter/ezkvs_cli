@@ -4,7 +4,7 @@
 
 %% MAX_HASH_VALUE = pow(2, 64).
 -define(MAX_HASH_VALUE, 2#1111111111111111111111111111111111111111111111111111111111111111).
--define(MAX_BUCKETS, 1).
+-define(MAX_BUCKETS, 3).
 
 connect() ->
   Servers = get_data_servers(),
@@ -12,7 +12,7 @@ connect() ->
 
 get_data_servers() ->
   %%[{0, ["127.0.0.1"]}, {1, ["192.168.1.105"]}].
-  [{0, ["127.0.0.1"]}].
+  [{0, [{"127.0.0.1", 2345}]}, {1, [{"192.168.1.109", 2346}]}, {2, [{"192.168.1.109", 2347}]}].
 
 connect(IPAddr, Port) ->
   io:format("IPAddr = ~p, Port = ~p.~n", [IPAddr, Port]),
@@ -48,9 +48,9 @@ get_reply(Socket) ->
       io:format("timeout.~n")
   end.
 
-generate_route([{BucketNum, [IPAddr | _T]} | T], RouteTable) ->
+generate_route([{BucketNum, [{IPAddr, Port} | _T]} | T], RouteTable) ->
   io:format("IPAddr = ~p.~n", [IPAddr]),
-  {ok, Socket} = connect(IPAddr, 2345),
+  {ok, Socket} = connect(IPAddr, Port),
   generate_route(T, [{BucketNum, {IPAddr, Socket}} | RouteTable]);
 generate_route([], RouteTable) ->
   RouteTable.
@@ -77,6 +77,7 @@ test() ->
   io:format("RouteTable = ~p.~n", [RouteTable]),
   put(name, "yangmeng", RouteTable),
   get(name, RouteTable),
-  delete(name, RouteTable),
+  %% delete(name, RouteTable),
   get(name, RouteTable),
+  put("9191754718kjfjajvkkrjakfda", "yangmeng", RouteTable),
   disconnect(RouteTable).
