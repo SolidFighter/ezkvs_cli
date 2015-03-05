@@ -11,8 +11,11 @@ connect() ->
   generate_route(Servers, []).
 
 get_data_servers() ->
-  %%[{0, ["127.0.0.1"]}, {1, ["192.168.1.105"]}].
-  [{0, [{"127.0.0.1", 2345}]}, {1, [{"192.168.1.109", 2346}]}, {2, [{"192.168.1.109", 2347}]}].
+  {ok, Socket} = gen_tcp:connect("192.168.1.109", 4345, [binary, {packet, 4}]),
+  ok = gen_tcp:send(Socket, term_to_binary({getconfig})),
+  Servers = get_reply(Socket),
+  gen_tcp:close(Socket),
+  Servers.
 
 connect(IPAddr, Port) ->
   io:format("IPAddr = ~p, Port = ~p.~n", [IPAddr, Port]),
@@ -43,7 +46,12 @@ get_reply(Socket) ->
   receive 
     {tcp, Socket, Bin} ->
       Val = binary_to_term(Bin),
-      io:format("Client result = ~p.~n",[Val])
+      case Val of 
+        {ok, config, Servers} ->
+          Servers;
+        _Other ->
+          io:format("Client result = ~p.~n",[Val])
+      end
     after 1000 ->
       io:format("timeout.~n")
   end.
